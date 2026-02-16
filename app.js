@@ -14,6 +14,8 @@ async function loadStudents() {
   localStudents = students.map(s => ({
     id: s.id,
     name: s.name,
+    email: s.email,
+    address: s.address ? `${s.address.street}, ${s.address.city}`: "N/A", //
     department: "N/A"
   }));
 
@@ -22,10 +24,12 @@ async function loadStudents() {
 
 function displayStudents() {
 
-  studentsDiv.innerHTML = localStudents.map(({ id, name, department }) => `
+  studentsDiv.innerHTML = localStudents.map(({ id, name, department, email, address }) => `
     <div class="card">
       <strong>${id} - ${name}</strong> (${department})
       <br/>
+      email: ${email}<br/>
+     address:  ${address}<br/>
       <button onclick="editStudent(${id})">Edit</button>
       <button onclick="deleteStudent(${id})">Delete</button>
     </div>
@@ -37,24 +41,20 @@ async function saveStudent() {
   const id = document.getElementById("studentId").value;
   const name = document.getElementById("studentName").value;
   const department = document.getElementById("department").value;
+   const email = document.getElementById("studentEmail").value;
+  const address = document.getElementById("studentAddress").value;
+
+   const studentData = { name, department, email, address };
+
 
   if (!id) {
 
-    const newStudent = await api.createStudent({ name, department });
-
-    localStudents.push({
-      id: newStudent.id,
-      name,
-      department
-    });
-
+     const newStudent = await api.createStudent(studentData);
+    localStudents.push({ id: newStudent.id, name, department, email, address });
   } else {
-
-    await api.updateStudent(id, { name, department });
-
+    await api.updateStudent(id, studentData);
     const index = localStudents.findIndex(s => s.id == id);
-    localStudents[index] = { id: Number(id), name, department };
-
+    localStudents[index] = { id: Number(id), name, department, email, address };
   }
 
   clearForm();
@@ -68,6 +68,8 @@ window.editStudent = function(id) {
   document.getElementById("studentId").value = student.id;
   document.getElementById("studentName").value = student.name;
   document.getElementById("department").value = student.department;
+  document.getElementById("studentEmail").value = student.email;
+  document.getElementById("studentAddress").value = student.address;
 }
 
 window.deleteStudent = async function(id) {
@@ -83,6 +85,8 @@ function clearForm() {
   document.getElementById("studentId").value = "";
   document.getElementById("studentName").value = "";
   document.getElementById("department").value = "";
+  document.getElementById("studentEmail").value = "";
+  document.getElementById("studentAddress").value = "";
 }
 
 loadStudents();
